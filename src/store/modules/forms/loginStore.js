@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import http from '../../../plugins/http';
+import { getCsrfCookie } from '../../../plugins/http';
 import router from '../../../router';
 
 export const useLoginStore = defineStore('login', {
@@ -16,17 +17,26 @@ export const useLoginStore = defineStore('login', {
       this.errorMessage = '';
       this.loading = true;
       try {
-        const response = await http.post('/api/login', {
+        await getCsrfCookie();
+
+        const response = await http.post('/login', {
           email: this.email,
           password: this.password,
         });
-        this.token = response.data.token;
+
+        this.token = response.data.access_token;
         this.user = response.data.user;
 
-        localStorage.setItem('auth_token', this.token); // para interceptor axios
+        localStorage.setItem('auth_token', this.token);
         router.push('/dashboard');
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'Error al iniciar sesión';
+        if (error.response && error.response.data && error.response.data.errors) {
+          const errors = error.response.data.errors;
+          const errorMessages = Object.values(errors).flat();
+          this.errorMessage = errorMessages.join(' ');
+        } else {
+          this.errorMessage = error.response?.data?.message || 'Error al iniciar sesión';
+        }
       } finally {
         this.loading = false;
       }
