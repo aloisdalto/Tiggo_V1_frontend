@@ -4,50 +4,76 @@ import { getCsrfCookie } from '../../../plugins/http';
 import router from '../../../router';
 
 export const useRegisterStore = defineStore('register', {
-  state: () => ({
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '', 
-    role: 'cliente',
+  state: () => ({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '', 
+    role: 'cliente',
     phone: '',
-    latitude: '', // Se mantiene, pero se llenará automáticamente
-    longitude: '', // Se mantiene, pero se llenará automáticamente
-    address: '', // <-- NUEVO: Para el campo de texto de dirección
+    latitude: '', 
+    longitude: '', 
+    address: '', 
     description: '', 
     service_id: null,
-    token: null,
-    user: null,
-    errorMessage: '',
-    loading: false,
-  }),
-  actions: {
-    async register() {
-      this.errorMessage = '';
-      this.loading = true;
-      try {
-        await getCsrfCookie();
-    
-        const response = await http.post('/register', {
-          name: this.name,
-          email: this.email,
-          password: this.password,
-          password_confirmation: this.password_confirmation,
-          role: this.role,
+    token: null,
+    user: null,
+    errorMessage: '',
+    loading: false,
+    verifying: false, // Estado para controlar la UI de verificación
+  }),
+  actions: {
+    async register() {
+      this.errorMessage = '';
+      this.loading = true;
+      this.verifying = false;
+      try {
+        await getCsrfCookie();
+    
+        const response = await http.post('/register', {
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          password_confirmation: this.password_confirmation,
+          role: this.role, 
           phone: this.phone,
-          // Aseguramos que se envíen los valores correctos
           latitude: this.latitude === '' ? null : this.latitude,
           longitude: this.longitude === '' ? null : this.longitude,
           description: this.description,
           service_id: this.service_id,
-        });
+        });
 
-        this.token = response.data.access_token;
-        this.user = response.data.user;
-    
-        localStorage.setItem('auth_token', this.token);
-        router.push('/dashboard');
-      } catch (error) {
+        // --- FASE DE VERIFICACIÓN ---
+        // 1. Activamos el estado visual
+        this.verifying = true;
+
+        // 2. Retraso artificial (1.5 seg) para dar tiempo al backend y feedback visual
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        this.token = response.data.access_token;
+        const userData = response.data.user;
+
+        // 3. Verificación Real: ¿El backend devolvió el perfil técnico?
+        // Esto confirma que el registro en la tabla 'technician_profiles' fue exitoso.
+        const hasTechProfile = userData.technician_profile || userData.technicianProfile;
+
+        // 4. Decisión final del rol
+        const confirmedRole = hasTechProfile ? 'tecnico' : 'cliente';
+        userData.role = confirmedRole; 
+
+        this.user = userData;
+    
+        localStorage.setItem('auth_token', this.token);
+        localStorage.setItem('user_data', JSON.stringify(this.user));
+        
+        // 5. Redirección basada en la verificación
+        if (confirmedRole === 'tecnico') {
+            router.push('/technician-dashboard');
+        } else {
+            router.push('/dashboard');
+        }
+
+      } catch (error) {
         if (error.response && error.response.data && error.response.data.errors) {
             const errors = error.response.data.errors;
             const errorMessages = Object.values(errors).flat(); 
@@ -55,24 +81,26 @@ export const useRegisterStore = defineStore('register', {
         } else {
             this.errorMessage = error.response?.data?.message || 'Error al registrar usuario';
         }
-      } finally {
-        this.loading = false;
-      }
-    },
-    clear() {
-      this.name = '';
-      this.email = '';
-      this.password = '';
-      this.password_confirmation = ''; 
-      this.role = 'cliente';
+      } finally {
+        this.loading = false;
+        this.verifying = false;
+      }
+    },
+    clear() {
+      this.name = '';
+      this.email = '';
+      this.password = '';
+      this.password_confirmation = ''; 
+      this.role = 'cliente';
       this.phone = '';
       this.latitude = '';
       this.longitude = '';
-      this.address = ''; // <-- NUEVO: Limpiar dirección
+      this.address = ''; 
       this.description = '';
       this.service_id = null;
-      this.errorMessage = '';
-    },
-  },
-  persist: true,
+      this.errorMessage = '';
+      this.verifying = false;
+    },
+  },
+  persist: true,
 });
