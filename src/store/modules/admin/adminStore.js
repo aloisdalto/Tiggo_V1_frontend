@@ -4,7 +4,7 @@ import http from '../../../plugins/http';
 export const useAdminStore = defineStore('admin', {
   state: () => ({
     users: [],
-    services: [], // Array para la lista de servicios
+    services: [], 
     stats: null,
     recentRequests: [],
     loading: false,
@@ -15,16 +15,13 @@ export const useAdminStore = defineStore('admin', {
       this.loading = true;
       this.errorMessage = '';
       try {
-        // 1. Cargar Reportes y Estadísticas
         const reportRes = await http.get('/admin/reports');
         this.stats = reportRes.data.stats;
         this.recentRequests = reportRes.data.recent_requests;
 
-        // 2. Cargar Usuarios
         const usersRes = await http.get('/admin/users');
         this.users = usersRes.data;
 
-        // 3. Cargar Servicios (Reutilizamos el endpoint público existente)
         const servicesRes = await http.get('/services');
         this.services = servicesRes.data;
 
@@ -39,7 +36,6 @@ export const useAdminStore = defineStore('admin', {
     async createNewService(name, description) {
         try {
             await http.post('/admin/services', { name, description });
-            // Recargar datos para ver el nuevo servicio en la lista
             this.fetchDashboardData(); 
             return true;
         } catch (error) {
@@ -48,11 +44,9 @@ export const useAdminStore = defineStore('admin', {
         }
     },
 
-    // --- NUEVA ACCIÓN PARA EDITAR ---
     async updateService(id, name, description) {
         try {
             await http.put(`/admin/services/${id}`, { name, description });
-            // Actualizamos la lista localmente para no recargar todo
             const index = this.services.findIndex(s => s.id === id);
             if (index !== -1) {
                 this.services[index] = { ...this.services[index], name, description };

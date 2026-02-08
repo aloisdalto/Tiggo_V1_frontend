@@ -26,19 +26,15 @@ export const useLoginStore = defineStore('login', {
         });
       
         this.verifying = true;
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Pequeño delay estético
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         this.token = response.data.access_token;
         const userData = response.data.user;
         
-        // --- LÓGICA DE ROLES MEJORADA ---
-        let detectedRole = 'cliente'; // Default
+        let detectedRole = 'cliente'; 
 
-        // 1. Verificar Admin (Prioridad Máxima)
-        // Buscamos el flag 'is_admin' que agregamos en el backend O buscamos en el array de roles
         const isAdmin = userData.is_admin || (userData.roles && userData.roles.some(r => r.name === 'admin'));
 
-        // 2. Verificar Técnico
         const isTechnician = userData.technician_profile || userData.technicianProfile;
 
         if (isAdmin) {
@@ -47,7 +43,6 @@ export const useLoginStore = defineStore('login', {
             detectedRole = 'tecnico';
         }
         
-        // Inyectamos el rol final en el objeto usuario para el router
         userData.role = detectedRole; 
         
         this.user = userData;
@@ -55,7 +50,6 @@ export const useLoginStore = defineStore('login', {
         localStorage.setItem('auth_token', this.token);
         localStorage.setItem('user_data', JSON.stringify(this.user));
 
-        // --- REDIRECCIÓN ---
         if (detectedRole === 'admin') {
             console.log("Redirigiendo a Admin Dashboard...");
             router.push('/admin-dashboard');
@@ -77,7 +71,6 @@ export const useLoginStore = defineStore('login', {
         this.verifying = false;
       }
     },
-    // ... resto de métodos (logout, clear) igual ...
     logout() {
       this.token = null;
       this.user = null;

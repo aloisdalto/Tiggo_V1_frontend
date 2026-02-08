@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import http from '../../../plugins/http';
-import { getCsrfCookie } from '../../../plugins/http';
 import router from '../../../router';
 
 export const useRegisterStore = defineStore('register', {
@@ -27,9 +26,7 @@ export const useRegisterStore = defineStore('register', {
       this.errorMessage = '';
       this.loading = true;
       this.verifying = false;
-      try {
-        //await getCsrfCookie();
-    
+      try {    
         const response = await http.post('/register', {
           name: this.name,
           email: this.email,
