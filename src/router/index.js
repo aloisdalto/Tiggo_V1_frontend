@@ -34,6 +34,12 @@ const routes = [
     component: () => import('../views/TechnicianDashboard.vue'),
     meta: { requiresAuth: true, role: 'tecnico' },
   },
+  {
+    path: '/admin-dashboard',
+    name: 'AdminDashboard',
+    component: () => import('../views/AdminDashboard.vue'),
+    meta: { requiresAuth: true, role: 'admin' }, // Rol protegido
+  }
 ];
 
 const router = createRouter({
@@ -78,6 +84,12 @@ router.beforeEach((to, from, next) => {
           next('/dashboard');
           return;
       }
+  }
+
+  if (to.meta.role === 'admin' && userRole !== 'admin') {
+    // Si no es admin, fuera
+    next('/dashboard'); // O a login
+    return;
   }
 
   next();

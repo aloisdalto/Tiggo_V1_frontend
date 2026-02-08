@@ -1,6 +1,5 @@
 <template>
   <div class="auth-page-wrapper">
-    <!-- ENLACE PARA VOLVER AL HOME -->
     <router-link to="/" class="back-link">
       <span class="arrow">←</span> Volver al Inicio
     </router-link>
@@ -14,8 +13,6 @@
       </div>
 
       <form @submit.prevent="isLogin ? loginStore.login() : registerStore.register()">
-        
-        <!-- SECCIÓN DE LOGIN -->
         <div class="form-group">
           <label for="email">Correo Electrónico</label>
           <input
@@ -32,7 +29,6 @@
             :disabled="isProcessing"
           />
         </div>
-
         <div class="form-group">
           <label for="password">Contraseña</label>
           <input
@@ -50,7 +46,6 @@
           />
         </div>
 
-        <!-- SECCIÓN DE REGISTRO -->
         <div v-if="!isLogin" class="register-section">
           <div class="form-group">
             <label for="name">Nombre Completo</label>
@@ -81,14 +76,11 @@
               <option value="tecnico">Quiero ofrecer mis servicios (Técnico)</option>
             </select>
           </div>
-
-          <!-- SECCIÓN TÉCNICO -->
           <div v-if="registerStore.role === 'tecnico'" class="technician-panel">
             <div class="panel-header">
-               <h4>🛠️ Perfil Profesional</h4>
+               <h4>Perfil Profesional</h4>
                <p>Completa estos datos para que los clientes te encuentren.</p>
             </div>
-            
             <div class="form-group">
               <label for="address">Tu Ubicación Base</label>
               <div class="input-with-button">
@@ -192,7 +184,6 @@ onMounted(() => {
     serviceStore.fetchServices();
 });
 
-// --- GEOLOCALIZACIÓN ---
 async function reverseGeocode(lat, lng) {
   try {
     const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
@@ -253,14 +244,13 @@ const errorMessage = computed(() => {
 </script>
 
 <style scoped>
-/* --- LAYOUT & WRAPPER --- */
 .auth-page-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f4f6f8; /* Mismo color de fondo que Dashboard */
+  background-color: #f4f6f8;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 1rem;
 }
@@ -280,15 +270,13 @@ const errorMessage = computed(() => {
 }
 .back-link:hover { color: #2c3e50; }
 .back-link .arrow { font-size: 1.2rem; }
-
-/* --- TARJETA PRINCIPAL --- */
 .auth-card {
   width: 100%;
   max-width: 480px;
   background-color: white;
   padding: 2.5rem;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Sombra suave estilo dashboard */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -307,7 +295,6 @@ const errorMessage = computed(() => {
   font-size: 0.95rem;
 }
 
-/* --- FORMULARIOS E INPUTS --- */
 .form-group { margin-bottom: 1.2rem; }
 
 label {
@@ -343,7 +330,6 @@ input:disabled, select:disabled, textarea:disabled {
   cursor: not-allowed;
 }
 
-/* Input con botón (Ubicación) */
 .input-with-button {
   display: flex;
   gap: 8px;
@@ -359,9 +345,8 @@ input:disabled, select:disabled, textarea:disabled {
 }
 .btn-icon:hover:not(:disabled) { background-color: #e0e0e0; }
 
-/* --- SECCIÓN TÉCNICO --- */
 .technician-panel {
-  background-color: #fffbf6; /* Un toque muy suave de naranja */
+  background-color: #fffbf6;
   border: 1px solid #ffe0b2;
   border-radius: 12px;
   padding: 1.5rem;
@@ -371,7 +356,6 @@ input:disabled, select:disabled, textarea:disabled {
 .panel-header h4 { margin: 0; color: #e67e22; }
 .panel-header p { margin: 5px 0 15px 0; font-size: 0.85rem; color: #d35400; }
 
-/* --- BOTÓN SUBMIT --- */
 .btn-submit {
   width: 100%;
   padding: 1rem;
@@ -397,7 +381,6 @@ input:disabled, select:disabled, textarea:disabled {
   cursor: wait;
 }
 
-/* --- FOOTER Y ALERTS --- */
 .auth-footer {
   margin-top: 1.5rem;
   text-align: center;
@@ -433,7 +416,6 @@ input:disabled, select:disabled, textarea:disabled {
 
 .locating-text { font-size: 0.8rem; color: #2980b9; margin-top: 4px; display: block;}
 
-/* Loader sencillo */
 .loader {
   border: 3px solid rgba(255,255,255,0.3);
   border-radius: 50%;
@@ -452,7 +434,6 @@ input:disabled, select:disabled, textarea:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsivo */
 @media (max-width: 600px) {
   .auth-card { padding: 1.5rem; }
   .back-link { top: 1rem; left: 1rem; }

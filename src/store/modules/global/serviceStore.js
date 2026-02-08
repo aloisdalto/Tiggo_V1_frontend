@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import http from '../../../plugins/http';
-import { getCsrfCookie } from '../../../plugins/http';
 
 export const useServiceStore = defineStore('service', {
   state: () => ({
@@ -68,16 +67,14 @@ export const useServiceStore = defineStore('service', {
       }
       this.loading = true;
       this.errorMessage = '';
-      try {
-        await getCsrfCookie();
-    
+      try {    
         const res = await http.post('/service-requests', {
           service_id: this.selectedServiceId,
           client_latitude: this.clientLocation.lat,
           client_longitude: this.clientLocation.lng,
           comments: this.address,
         });
-        this.myRequests = []; // Limpiar caché de solicitudes
+        this.myRequests = [];
         return res.data;
       } catch (error) {
         this.errorMessage = 'Error creando solicitud';
@@ -95,7 +92,6 @@ export const useServiceStore = defineStore('service', {
       this.loading = false;
     },
 
-    // --- NUEVAS ACCIONES PARA GESTIONAR SOLICITUDES ---
     async fetchMyRequests() {
       this.loading = true;
       this.errorMessage = '';
@@ -113,7 +109,7 @@ export const useServiceStore = defineStore('service', {
       this.loading = true;
       this.errorMessage = '';
       try {
-        await getCsrfCookie();
+        //await getCsrfCookie();
         
         const payload = { status: newStatus };
         if (comment) {
@@ -138,13 +134,11 @@ export const useServiceStore = defineStore('service', {
       this.loading = true;
       this.errorMessage = '';
       try {
-        await getCsrfCookie();
         const res = await http.post('/ratings', {
           service_request_id: payload.service_request_id,
           score: payload.score,
           comment: payload.comment,
         });
-        
         const index = this.myRequests.findIndex(req => req.id === payload.service_request_id);
         if (index !== -1) {
           this.myRequests[index].rating = res.data;
